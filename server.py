@@ -1,106 +1,76 @@
 import os
 import sys
-import urllib.parse
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
+import urllib.parse
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
-PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "public")
+BASE_DIR = os.path.dirname(__file__)
+PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 
-class SpeedTestHandler(SimpleHTTPRequestHandler):
+class SpeedServer(SimpleHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
     def translate_path(self, path):
         parsed = urllib.parse.urlparse(path)
-        request_path = parsed.path
-        if request_path == "/":
-            request_path = "/index.html"
-        request_path = os.path.normpath(request_path.lstrip("/"))
-        return os.path.join(PUBLIC_DIR, request_path)
+        clean_path = parsed.path
+        if clean_path == "/":
+            clean_path = "/index.html"
+        clean_path = os.path.normpath(clean_path.lstrip("/"))
+        return os.path.join(PUBLIC_DIR, clean_path)
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
-        query = urllib.parse.parse_qs(parsed.query)
+        params = urllib.parse.parse_qs(parsed.query)
 
-        if path == "/ping":
-            self._send_json({"message": "pong"})
+        if path == "/api/ping":
+            self._json({"pong": True})
             return
 
-        if path == "/dw":
-            size_param = query.get("size", ["1000000"])[0]
-            try:
-                total_size = int(size_param)
-            except ValueError:
-                self.send_error(400, "Invalid size")
-                return
-
-            if total_size < 0:
-                self.send_error(400, "Size must be non-negative")
-                return
-
-            chunk = b"\0" * (1024 * 1024)  # 1MB server-side chunk
+        if path == "/api/download":
+            size = int(params.get("bytes", ["5000000"])[0])
+            chunk = b"0" * 65536
             self.send_response(200)
             self.send_header("Content-Type", "application/octet-stream")
-            self.send_header("Content-Length", str(total_size))
             self.send_header("Cache-Control", "no-store")
-            self.send_header("Connection", "keep-alive")
+            self.send_header("Content-Length", str(size))
             self.end_headers()
-
-            bytes_sent = 0
-            while bytes_sent < total_size:
-                to_write = min(len(chunk), total_size - bytes_sent)
-                self.wfile.write(chunk[:to_write])
-                bytes_sent += to_write
+            sent = 0
+            while sent < size:
+                n = min(len(chunk), size - sent)
+                self.wfile.write(chunk[:n])
+                self.wfile.flush()  # important for streaming speed test
+                sent += n
             return
 
         return SimpleHTTPRequestHandler.do_GET(self)
 
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path
-
-        if path in ("/up", "/upload"):
-            content_length = self.headers.get("Content-Length")
-            total_read = 0
-            if content_length is not None:
-                try:
-                    remaining = int(content_length)
-                except ValueError:
-                    self.send_error(400, "Invalid Content-Length")
-                    return
-                while remaining > 0:
-                    chunk = self.rfile.read(min(65536, remaining))
-                    if not chunk:
-                        break
-                    total_read += len(chunk)
-                    remaining -= len(chunk)
-            else:
-                while True:
-                    chunk = self.rfile.read(65536)
-                    if not chunk:
-                        break
-                    total_read += len(chunk)
-
-            self._send_json({"uploaded_bytes": total_read})
+        if parsed.path == "/api/upload":
+            total = 0
+            while True:
+                chunk = self.rfile.read(65536)
+                if not chunk:
+                    break
+                total += len(chunk)
+            self._json({"received": total})
             return
-
         self.send_error(404, "Not Found")
 
-    def _send_json(self, payload, status=200):
-        data = json.dumps(payload).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
+    def _json(self, obj):
+        data = json.dumps(obj).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
-        self.send_header("Connection", "keep-alive")
         self.end_headers()
         self.wfile.write(data)
 
-def run(host="0.0.0.0", port=8000):
-    server_address = (host, port)
-    httpd = ThreadingHTTPServer(server_address, SpeedTestHandler)
-    print(f"SpeedTest server running at http://{host}:{port}")
-    print(f"Serving static files from: {PUBLIC_DIR}")
+def run(port=8000):
+    httpd = ThreadingHTTPServer(("0.0.0.0", port), SpeedServer)
+    print(f"Server running at http://0.0.0.0:{port}")
+    print(f"Serving static from {PUBLIC_DIR}")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -109,11 +79,7 @@ def run(host="0.0.0.0", port=8000):
         httpd.server_close()
 
 if __name__ == "__main__":
-    selected_port = 8000
+    port = 8000
     if len(sys.argv) > 1:
-        try:
-            selected_port = int(sys.argv[1])
-        except ValueError:
-            print("Usage: python server.py [port]")
-            sys.exit(1)
-    run(port=selected_port)
+        port = int(sys.argv[1])
+    run(port)
