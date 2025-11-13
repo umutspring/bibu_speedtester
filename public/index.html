@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Speed Test</title>
+	<link rel="stylesheet" href="/style.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+	<style>
+		/* Minimal override when Chart is not used */
+		canvas { display: none; }
+		.gauge-wrapper { display: none; }
+	</style>
+	</head>
+<body>
+	<div class="background-animation"></div>
+	<div class="container">
+		<h1>Internet Speed Test</h1>
+
+		<button id="startButton">BAŞLAT</button>
+		<div id="status">Hazır</div>
+
+		<div id="results">
+			<div class="result-box">
+				<span class="result-label">Ping</span>
+				<span class="result-value" id="pingResult">--</span>
+			</div>
+			<div class="result-box">
+				<span class="result-label">Download</span>
+				<span class="result-value" id="downloadResult">--</span>
+				<span class="sub-result" id="downloadData"></span>
+			</div>
+			<div class="result-box">
+				<span class="result-label">Upload</span>
+				<span class="result-value" id="uploadResult">--</span>
+				<span class="sub-result" id="uploadData"></span>
+			</div>
+		</div>
+	</div>
+
+	<script src="/app.js"></script>
+	</body>
+</html>
+
+
