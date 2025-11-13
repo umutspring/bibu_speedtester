@@ -46,17 +46,15 @@ class SpeedServer(SimpleHTTPRequestHandler):
         return SimpleHTTPRequestHandler.do_GET(self)
 
     def do_POST(self):
-        parsed = urllib.parse.urlparse(self.path)
-        if parsed.path == "/api/upload":
-            total = 0
-            while True:
-                chunk = self.rfile.read(65536)
-                if not chunk:
-                    break
-                total += len(chunk)
+    	parsed = urllib.parse.urlparse(self.path)
+    	if parsed.path == "/api/upload":
+            length = int(self.headers.get("Content-Length", 0))
+            data = self.rfile.read(length) if length > 0 else b""
+            total = len(data)
             self._json({"received": total})
             return
-        self.send_error(404, "Not Found")
+    	self.send_error(404, "Not Found")
+
 
     def _json(self, obj):
         data = json.dumps(obj).encode()
