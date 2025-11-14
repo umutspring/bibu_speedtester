@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// ACCURATE DOWNLOAD (STREAM READER)
 	// - Use long-running streams and abort exactly at TEST_TIME
 	// -------------------------
-	async function streamDownload(bytes, signal) {
+	async function streamDownload(bytes, signal, onProgress) {
 		let total = 0;
 		try {
 			const res = await fetch(`/api/download?bytes=${bytes}&rand=${Math.random()}`, {
@@ -120,7 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			while (true) {
 				const chunk = await reader.read();
 				if (chunk.done) break;
-				total += chunk.value.length;
+				const n = chunk.value.length;
+				total += n;
+				if (onProgress) onProgress(n);
 			}
 		} catch (e) {
 			// Swallow abort errors; rethrow others
@@ -142,8 +144,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		const BIG_SIZE = 1_000_000_000; // 1 GB per stream, will be aborted
 
 		const tasks = controllers.map(async (c) => {
-			const bytes = await streamDownload(BIG_SIZE, c.signal);
-			totalBytes += bytes;
+			await streamDownload(BIG_SIZE, c.signal, (n) => {
+				totalBytes += n;
+			});
 		});
 
 		// Abort precisely at TEST_TIME
