@@ -53,6 +53,10 @@ h2 { font-size: 1.5em; color: var(--label-color); text-transform: uppercase; let
 .gauge-text { font-family: 'Roboto Mono', monospace; font-size: 3em; font-weight: 700; color: #fff; line-height: 1; }
 .gauge-unit { font-family: 'Poppins', sans-serif; font-size: 1.2em; color: var(--glow-color); font-weight: 500; }
 
+/* Gauge arcs */
+.gauge-arc-bg { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 18; stroke-linecap: round; }
+.gauge-arc-fg { fill: none; stroke: var(--glow-color); stroke-width: 18; stroke-linecap: round; filter: drop-shadow(0 0 8px rgba(0,123,255,0.6)); stroke-dasharray: 0 1; transition: stroke-dashoffset 180ms ease-out; }
+
 #startButton {
     background-color: var(--glow-color); color: white; border: none; padding: 15px 40px; font-size: 18px;
     font-weight: 700; letter-spacing: 1px; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
