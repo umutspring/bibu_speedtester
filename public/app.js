@@ -7,16 +7,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const lossEl = document.getElementById("lossResult");
     const statusEl = document.getElementById("status");
 
-    // Gauge elements
-    const gaugeDownArc = document.getElementById("gaugeDownArc");
-    const gaugeUpArc = document.getElementById("gaugeUpArc");
-    const gaugeDownValue = document.getElementById("gaugeDownValue");
-    const gaugeUpValue = document.getElementById("gaugeUpValue");
+		// Gauge elements 
+		const gaugeArc = document.getElementById("gaugeArc");
+		const gaugeValue = document.getElementById("gaugeValue");
 
     // Gauge helpers
     const GAUGE_MAX_MBPS = 1000; // scale up to 1000 Mbps
-    let gaugeDownLen = 0;
-    let gaugeUpLen = 0;
+		let gaugeLen = 0;
     function initGauge(arc) {
         if (!arc) return 0;
         const len = arc.getTotalLength();
@@ -44,12 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
         statusEl.textContent = "Testing...";
 
         // Initialize gauges
-        gaugeDownLen = initGauge(gaugeDownArc);
-        gaugeUpLen = initGauge(gaugeUpArc);
-        setGauge(gaugeDownArc, gaugeDownLen, 0);
-        setGauge(gaugeUpArc, gaugeUpLen, 0);
-        if (gaugeDownValue) gaugeDownValue.textContent = "0.0";
-        if (gaugeUpValue) gaugeUpValue.textContent = "0.0";
+			gaugeLen = initGauge(gaugeArc);
+			setGauge(gaugeArc, gaugeLen, 0);
+			if (gaugeValue) gaugeValue.textContent = "0.0";
 
         try {
             const pingRes = await testPing();
@@ -159,8 +153,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const uiTimer = setInterval(() => {
             const elapsed = Math.max(0.001, (performance.now() - start) / 1000);
             const mbps = toMbps(totalBytes, elapsed);
-            if (gaugeDownValue) gaugeDownValue.textContent = mbps.toFixed(1);
-            setGauge(gaugeDownArc, gaugeDownLen, mbps);
+				if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
+				setGauge(gaugeArc, gaugeLen, mbps);
         }, 200);
 
 		await Promise.allSettled(tasks);
@@ -169,8 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		const elapsed = TEST_TIME;
         const mbps = toMbps(totalBytes, elapsed);
         clearInterval(uiTimer);
-        if (gaugeDownValue) gaugeDownValue.textContent = mbps.toFixed(1);
-        setGauge(gaugeDownArc, gaugeDownLen, mbps);
+			if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
+			setGauge(gaugeArc, gaugeLen, mbps);
 		return mbps;
 	}
 
@@ -199,8 +193,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const uiTimer = setInterval(() => {
             const elapsed = Math.max(0.001, (performance.now() - start) / 1000);
             const mbps = toMbps(total, elapsed);
-            if (gaugeUpValue) gaugeUpValue.textContent = mbps.toFixed(1);
-            setGauge(gaugeUpArc, gaugeUpLen, mbps);
+				if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
+				setGauge(gaugeArc, gaugeLen, mbps);
         }, 200);
 
         await Promise.all(Array(UL_THREADS).fill(0).map(worker));
@@ -208,8 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const elapsed = (performance.now() - start) / 1000;
         const mbps = toMbps(total, elapsed);
         clearInterval(uiTimer);
-        if (gaugeUpValue) gaugeUpValue.textContent = mbps.toFixed(1);
-        setGauge(gaugeUpArc, gaugeUpLen, mbps);
+			if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
+			setGauge(gaugeArc, gaugeLen, mbps);
         return mbps;
     }
 });
