@@ -5,9 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const upEl = document.getElementById("uploadResult");
     const statusEl = document.getElementById("status");
 
-    const TEST_TIME = 20; // seconds
-    const DL_THREADS = 12; //4
-    const UL_THREADS = 12; //3
+    const TEST_TIME = 10; // seconds
+    const DL_THREADS = 6;
+    const UL_THREADS = 6; //3
 
     const toMbps = (bytes, seconds) => (bytes * 8) / (seconds * 1e6);
 
@@ -49,41 +49,56 @@ document.addEventListener("DOMContentLoaded", () => {
         return times.reduce((a, b) => a + b, 0) / times.length;
     }
 
-    // -------------------------
-    // ACCURATE DOWNLOAD (STREAM READER)
-    // -------------------------
-    async function streamDownload(bytes) {
-        let total = 0;
-        const res = await fetch(`/api/download?bytes=${bytes}&rand=${Math.random()}`, {
-            cache: "no-store"
-        });
-        const reader = res.body.getReader();
+	// -------------------------
+	// ACCURATE DOWNLOAD (STREAM READER)
+	// - Use long-running streams and abort exactly at TEST_TIME
+	// -------------------------
+	async function streamDownload(bytes, signal) {
+		let total = 0;
+		try {
+			const res = await fetch(`/api/download?bytes=${bytes}&rand=${Math.random()}`, {
+				cache: "no-store",
+				signal
+			});
+			const reader = res.body.getReader();
+			while (true) {
+				const chunk = await reader.read();
+				if (chunk.done) break;
+				total += chunk.value.length;
+			}
+		} catch (e) {
+			// Swallow abort errors; rethrow others
+			if (!(e && e.name === "AbortError")) {
+				throw e;
+			}
+		}
+		return total;
+	}
 
-        while (true) {
-            const chunk = await reader.read();
-            if (chunk.done) break;
-            total += chunk.value.length;
-        }
-        return total;
-    }
+	async function testDownloadAccurate() {
+		statusEl.textContent = "Downloading...";
 
-    async function testDownloadAccurate() {
-        statusEl.textContent = "Downloading...";
+		let totalBytes = 0;
+		const start = performance.now();
 
-        let totalBytes = 0;
-        const start = performance.now();
+		// Create one long-running stream per thread and abort at TEST_TIME
+		const controllers = Array.from({ length: DL_THREADS }, () => new AbortController());
+		const BIG_SIZE = 1_000_000_000; // 1 GB per stream, will be aborted
 
-        const worker = async () => {
-            while ((performance.now() - start) / 1000 < TEST_TIME) {
-                totalBytes += await streamDownload(20_000_000); // 20 MB chunk
-            }
-        };
+		const tasks = controllers.map(async (c) => {
+			const bytes = await streamDownload(BIG_SIZE, c.signal);
+			totalBytes += bytes;
+		});
 
-        await Promise.all(Array(DL_THREADS).fill(0).map(worker));
+		// Abort precisely at TEST_TIME
+		setTimeout(() => controllers.forEach(c => c.abort()), TEST_TIME * 1000);
 
-        const elapsed = (performance.now() - start) / 1000;
-        return toMbps(totalBytes, elapsed);
-    }
+		await Promise.allSettled(tasks);
+
+		// Use the intended test window to avoid tail effects
+		const elapsed = TEST_TIME;
+		return toMbps(totalBytes, elapsed);
+	}
 
     // -------------------------
     // ACCURATE UPLOAD
