@@ -29,7 +29,7 @@ class SpeedServer(SimpleHTTPRequestHandler):
 
         if path == "/api/download":
             size = int(params.get("bytes", ["5000000"])[0])
-            chunk = b"0" * 65536
+            chunk = b"0" * 1024*1024
             self.send_response(200)
             self.send_header("Content-Type", "application/octet-stream")
             self.send_header("Cache-Control", "no-store")
@@ -39,7 +39,8 @@ class SpeedServer(SimpleHTTPRequestHandler):
             while sent < size:
                 n = min(len(chunk), size - sent)
                 self.wfile.write(chunk[:n])
-                self.wfile.flush()  # important for streaming speed test
+                #self.wfile.flush()  # important for streaming speed test
+                pass
                 sent += n
             return
 
