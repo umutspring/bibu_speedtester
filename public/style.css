@@ -57,6 +57,9 @@ h2 { font-size: 1.5em; color: var(--label-color); text-transform: uppercase; let
 .gauge-arc-bg { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 18; stroke-linecap: round; }
 .gauge-arc-fg { fill: none; stroke: var(--glow-color); stroke-width: 18; stroke-linecap: round; filter: drop-shadow(0 0 8px rgba(0,123,255,0.6)); stroke-dasharray: 0 1; transition: stroke-dashoffset 180ms ease-out; }
 
+#gauge, .gauges { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.gauges .gauge-wrapper { flex: 0 1 280px; }
+
 #startButton {
     background-color: var(--glow-color); color: white; border: none; padding: 15px 40px; font-size: 18px;
     font-weight: 700; letter-spacing: 1px; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;

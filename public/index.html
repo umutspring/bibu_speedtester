@@ -8,11 +8,6 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-	<style>
-		/* Minimal override when Chart is not used */
-		canvas { display: none; }
-		.gauge-wrapper { display: none; }
-	</style>
 	</head>
 <body>
 	<div class="background-animation"></div>
@@ -22,16 +17,27 @@
 		<button id="startButton">BAŞLAT</button>
 		<div id="status">Hazır</div>
 
-		<div class="gauge-wrapper" id="gauge">
-			<svg width="280" height="140" viewBox="0 0 280 140" aria-hidden="true">
-				<!-- Semi-circle background arc -->
-				<path class="gauge-arc-bg" d="M20 140 A 120 120 0 0 1 260 140"></path>
-				<!-- Foreground progress arc -->
-				<path class="gauge-arc-fg" id="gaugeArc" d="M20 140 A 120 120 0 0 1 260 140"></path>
-			</svg>
-			<div class="gauge-text-area">
-				<div class="gauge-text" id="gaugeValue">0.0</div>
-				<div class="gauge-unit" id="gaugeUnit">Mbps</div>
+		<div class="gauges">
+			<div class="gauge-wrapper" id="gaugeDown">
+				<svg width="280" height="140" viewBox="0 0 280 140" aria-hidden="true">
+					<path class="gauge-arc-bg" d="M20 140 A 120 120 0 0 1 260 140"></path>
+					<path class="gauge-arc-fg" id="gaugeDownArc" d="M20 140 A 120 120 0 0 1 260 140"></path>
+				</svg>
+				<div class="gauge-text-area">
+					<div class="gauge-text" id="gaugeDownValue">0.0</div>
+					<div class="gauge-unit">Download</div>
+				</div>
+			</div>
+
+			<div class="gauge-wrapper" id="gaugeUp">
+				<svg width="280" height="140" viewBox="0 0 280 140" aria-hidden="true">
+					<path class="gauge-arc-bg" d="M20 140 A 120 120 0 0 1 260 140"></path>
+					<path class="gauge-arc-fg" id="gaugeUpArc" d="M20 140 A 120 120 0 0 1 260 140"></path>
+				</svg>
+				<div class="gauge-text-area">
+					<div class="gauge-text" id="gaugeUpValue">0.0</div>
+					<div class="gauge-unit">Upload</div>
+				</div>
 			</div>
 		</div>
 
