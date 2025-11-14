@@ -5,9 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const upEl = document.getElementById("uploadResult");
     const statusEl = document.getElementById("status");
 
-    const TEST_TIME = 10; // seconds
-    const DL_THREADS = 6; //4
-    const UL_THREADS = 6; //3
+    const TEST_TIME = 20; // seconds
+    const DL_THREADS = 12; //4
+    const UL_THREADS = 12; //3
 
     const toMbps = (bytes, seconds) => (bytes * 8) / (seconds * 1e6);
 
