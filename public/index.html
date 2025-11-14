@@ -22,10 +22,31 @@
 		<button id="startButton">BAŞLAT</button>
 		<div id="status">Hazır</div>
 
+		<div class="gauge-wrapper" id="gauge">
+			<svg width="280" height="140" viewBox="0 0 280 140" aria-hidden="true">
+				<!-- Semi-circle background arc -->
+				<path class="gauge-arc-bg" d="M20 140 A 120 120 0 0 1 260 140"></path>
+				<!-- Foreground progress arc -->
+				<path class="gauge-arc-fg" id="gaugeArc" d="M20 140 A 120 120 0 0 1 260 140"></path>
+			</svg>
+			<div class="gauge-text-area">
+				<div class="gauge-text" id="gaugeValue">0.0</div>
+				<div class="gauge-unit" id="gaugeUnit">Mbps</div>
+			</div>
+		</div>
+
 		<div id="results">
 			<div class="result-box">
 				<span class="result-label">Ping</span>
 				<span class="result-value" id="pingResult">--</span>
+			</div>
+			<div class="result-box">
+				<span class="result-label">Jitter</span>
+				<span class="result-value" id="jitterResult">--</span>
+			</div>
+			<div class="result-box">
+				<span class="result-label">Packet Loss</span>
+				<span class="result-value" id="lossResult">--</span>
 			</div>
 			<div class="result-box">
 				<span class="result-label">Download</span>
