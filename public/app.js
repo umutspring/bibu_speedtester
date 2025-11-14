@@ -54,6 +54,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			} catch (e) {
 				// ignore
 			}
+			// Attempt to get public client IP from external service (fallback)
+			try {
+				const r = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+				const j = await r.json();
+				if (clientIpEl && j.ip) clientIpEl.textContent = j.ip;
+			} catch (e) {
+				// ignore
+			}
 		}
 
     const TEST_TIME = 10; // seconds
@@ -96,6 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
             statusEl.textContent = "Error occurred!";
         } finally {
             startBtn.disabled = false;
+				// Reset gauge and sub-data after test completes
+				setGauge(gaugeArc, gaugeLen, 0);
+				if (gaugeValue) gaugeValue.textContent = "0.0";
+				if (downDataEl) downDataEl.textContent = "0 B";
+				if (upDataEl) upDataEl.textContent = "0 B";
         }
     };
 

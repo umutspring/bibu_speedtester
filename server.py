@@ -29,15 +29,41 @@ class SpeedServer(SimpleHTTPRequestHandler):
             return
 
         if path == "/api/info":
+            # Derive client IP (prefer proxy headers if present)
+            client_ip = ""
             try:
-                client_ip = self.client_address[0]
+                xff = self.headers.get("X-Forwarded-For")
+                xri = self.headers.get("X-Real-IP")
+                cfc = self.headers.get("CF-Connecting-IP")
+                if xff:
+                    client_ip = xff.split(",")[0].strip()
+                elif xri:
+                    client_ip = xri.strip()
+                elif cfc:
+                    client_ip = cfc.strip()
+                else:
+                    client_ip = self.client_address[0]
             except Exception:
                 client_ip = ""
+
+            # Derive server outward IP (avoid loopback if possible)
+            server_ip = ""
             try:
-                # Local socket address the client connected to
                 server_ip = self.connection.getsockname()[0]
             except Exception:
                 server_ip = ""
+            try:
+                # Attempt to get the outward-facing IP (LAN/public) via UDP trick
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                try:
+                    s.connect(("8.8.8.8", 80))
+                    outbound_ip = s.getsockname()[0]
+                    if outbound_ip and outbound_ip != "127.0.0.1":
+                        server_ip = outbound_ip
+                finally:
+                    s.close()
+            except Exception:
+                pass
             self._json({
                 "client_ip": client_ip,
                 "server_ip": server_ip,
