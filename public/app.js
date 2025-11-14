@@ -11,6 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		const gaugeArc = document.getElementById("gaugeArc");
 		const gaugeValue = document.getElementById("gaugeValue");
 
+		// Sub-result data elements
+		const downDataEl = document.getElementById("downloadData");
+		const upDataEl = document.getElementById("uploadData");
+
+		// Info elements
+		const serverIpEl = document.getElementById("serverIpResult");
+		const serverLocEl = document.getElementById("serverLocResult");
+		const clientIpEl = document.getElementById("clientIpResult");
+
     // Gauge helpers
     const GAUGE_MAX_MBPS = 1000; // scale up to 1000 Mbps
 		let gaugeLen = 0;
@@ -27,6 +36,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const f = v / maxMbps;
         arc.style.strokeDashoffset = String(arcLen * (1 - f));
     }
+		function formatBytes(bytes) {
+			if (!bytes || bytes <= 0) return "0 B";
+			const units = ["B","KB","MB","GB","TB"];
+			let i = 0; let v = bytes;
+			while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+			const decimals = v >= 100 ? 0 : v >= 10 ? 1 : 2;
+			return v.toFixed(decimals) + " " + units[i];
+		}
+		async function loadInfo() {
+			try {
+				const res = await fetch(`/api/info?ts=${Math.random()}`, { cache: "no-store" });
+				const data = await res.json();
+				if (serverIpEl && data.server_ip) serverIpEl.textContent = data.server_ip;
+				if (serverLocEl && data.server_location) serverLocEl.textContent = data.server_location;
+				if (clientIpEl && data.client_ip) clientIpEl.textContent = data.client_ip;
+			} catch (e) {
+				// ignore
+			}
+		}
 
     const TEST_TIME = 10; // seconds
     const DL_THREADS = 6;
@@ -39,6 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
         pingEl.textContent = downEl.textContent = upEl.textContent = "--";
         jitterEl.textContent = lossEl.textContent = "--";
         statusEl.textContent = "Testing...";
+			if (downDataEl) downDataEl.textContent = "";
+			if (upDataEl) upDataEl.textContent = "";
+
+			// Info (server/client)
+			loadInfo();
 
         // Initialize gauges
 			gaugeLen = initGauge(gaugeArc);
@@ -158,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const mbps = toMbps(totalBytes, elapsed);
 				if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 				setGauge(gaugeArc, gaugeLen, mbps);
+				if (downDataEl) downDataEl.textContent = formatBytes(totalBytes);
         }, 200);
 
 		await Promise.allSettled(tasks);
@@ -168,6 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(uiTimer);
 			if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 			setGauge(gaugeArc, gaugeLen, mbps);
+			if (downDataEl) downDataEl.textContent = formatBytes(totalBytes);
 		return mbps;
 	}
 
@@ -198,6 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const mbps = toMbps(total, elapsed);
 				if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 				setGauge(gaugeArc, gaugeLen, mbps);
+				if (upDataEl) upDataEl.textContent = formatBytes(total);
         }, 200);
 
         await Promise.all(Array(UL_THREADS).fill(0).map(worker));
@@ -207,6 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(uiTimer);
 			if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 			setGauge(gaugeArc, gaugeLen, mbps);
+			if (upDataEl) upDataEl.textContent = formatBytes(total);
         return mbps;
     }
 });

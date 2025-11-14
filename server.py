@@ -28,6 +28,23 @@ class SpeedServer(SimpleHTTPRequestHandler):
             self._json({"pong": True})
             return
 
+        if path == "/api/info":
+            try:
+                client_ip = self.client_address[0]
+            except Exception:
+                client_ip = ""
+            try:
+                # Local socket address the client connected to
+                server_ip = self.connection.getsockname()[0]
+            except Exception:
+                server_ip = ""
+            self._json({
+                "client_ip": client_ip,
+                "server_ip": server_ip,
+                "server_location": "Frankfurt"
+            })
+            return
+
         if path == "/api/download":
             size = int(params.get("bytes", ["5000000"])[0])
             chunk = b"0" * 1024*1024
