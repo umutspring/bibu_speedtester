@@ -87,3 +87,10 @@ h2 { font-size: 1.5em; color: var(--label-color); text-transform: uppercase; let
 .details-button-container { margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px; }
 .hidden { display: none; }
 .history-container { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+
+/* Compact info row for server/client */
+.info-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+.result-box.compact { padding: 10px; min-width: 140px; }
+.result-box.compact .result-value { font-size: 1.0em; }
+.result-box.compact .result-label { font-size: 10px; }
+.result-box.compact .sub-result { font-size: 0.75em; }

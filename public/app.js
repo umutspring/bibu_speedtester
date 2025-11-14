@@ -75,8 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
         pingEl.textContent = downEl.textContent = upEl.textContent = "--";
         jitterEl.textContent = lossEl.textContent = "--";
         statusEl.textContent = "Testing...";
-			if (downDataEl) downDataEl.textContent = "";
-			if (upDataEl) upDataEl.textContent = "";
+			if (downDataEl) downDataEl.textContent = "Data used: 0 B";
+			if (upDataEl) upDataEl.textContent = "Data used: 0 B";
 
 			// Info (server/client)
 			loadInfo();
@@ -107,8 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				// Reset gauge and sub-data after test completes
 				setGauge(gaugeArc, gaugeLen, 0);
 				if (gaugeValue) gaugeValue.textContent = "0.0";
-				if (downDataEl) downDataEl.textContent = "0 B";
-				if (upDataEl) upDataEl.textContent = "0 B";
+				// Keep Data used values as requested
         }
     };
 
@@ -204,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const mbps = toMbps(totalBytes, elapsed);
 				if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 				setGauge(gaugeArc, gaugeLen, mbps);
-				if (downDataEl) downDataEl.textContent = formatBytes(totalBytes);
+				if (downDataEl) downDataEl.textContent = "Data used: " + formatBytes(totalBytes);
         }, 200);
 
 		await Promise.allSettled(tasks);
@@ -215,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(uiTimer);
 			if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 			setGauge(gaugeArc, gaugeLen, mbps);
-			if (downDataEl) downDataEl.textContent = formatBytes(totalBytes);
+			if (downDataEl) downDataEl.textContent = "Data used: " + formatBytes(totalBytes);
 		return mbps;
 	}
 
@@ -246,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const mbps = toMbps(total, elapsed);
 				if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 				setGauge(gaugeArc, gaugeLen, mbps);
-				if (upDataEl) upDataEl.textContent = formatBytes(total);
+				if (upDataEl) upDataEl.textContent = "Data used: " + formatBytes(total);
         }, 200);
 
         await Promise.all(Array(UL_THREADS).fill(0).map(worker));
@@ -256,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(uiTimer);
 			if (gaugeValue) gaugeValue.textContent = mbps.toFixed(1);
 			setGauge(gaugeArc, gaugeLen, mbps);
-			if (upDataEl) upDataEl.textContent = formatBytes(total);
+			if (upDataEl) upDataEl.textContent = "Data used: " + formatBytes(total);
         return mbps;
     }
 });
