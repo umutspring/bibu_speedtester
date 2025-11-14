@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import urllib.parse
+import socket
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 BASE_DIR = os.path.dirname(__file__)
@@ -33,14 +34,19 @@ class SpeedServer(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "application/octet-stream")
             self.send_header("Cache-Control", "no-store")
+            self.send_header("Connection", "keep-alive")
             self.send_header("Content-Length", str(size))
             self.end_headers()
+            # Disable Nagle's algorithm to reduce latency for streaming writes
+            try:
+                self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except Exception:
+                pass
             sent = 0
             while sent < size:
                 n = min(len(chunk), size - sent)
                 self.wfile.write(chunk[:n])
-                #self.wfile.flush()  # important for streaming speed test
-                pass
+                self.wfile.flush()  # ensure chunks are pushed promptly
                 sent += n
             return
 
