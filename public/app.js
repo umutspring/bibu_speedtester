@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// ACCURATE DOWNLOAD (STREAM READER)
 	// - Use long-running streams and abort exactly at TEST_TIME
 	// -------------------------
-	async function streamDownload(bytes, signal, onProgress, deadlineMs) {
+	async function streamDownload(bytes, signal, onProgress) {
 		let total = 0;
 		try {
 			const res = await fetch(`/api/download?bytes=${bytes}&rand=${Math.random()}`, {
@@ -168,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				const n = chunk.value.length;
 				total += n;
 				if (onProgress) onProgress(n);
-				if (deadlineMs && performance.now() >= deadlineMs) break;
 			}
 		} catch (e) {
 			// Swallow abort errors; rethrow others
@@ -188,16 +187,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Create one long-running stream per thread and abort at TEST_TIME
 		const controllers = Array.from({ length: DL_THREADS }, () => new AbortController());
 		const BIG_SIZE = 1_000_000_000; // 1 GB per stream, will be aborted
-		const deadlineMs = start + TEST_TIME * 1000;
 
 		const tasks = controllers.map(async (c) => {
 			await streamDownload(BIG_SIZE, c.signal, (n) => {
 				totalBytes += n;
-			}, deadlineMs);
+			});
 		});
 
-		// Abort at the deadline to close sockets
-		setTimeout(() => controllers.forEach(c => c.abort()), Math.max(0, deadlineMs - performance.now()));
+		// Abort precisely at TEST_TIME
+		setTimeout(() => controllers.forEach(c => c.abort()), TEST_TIME * 1000);
 
         // Live update gauge
         const uiTimer = setInterval(() => {
