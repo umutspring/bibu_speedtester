@@ -73,7 +73,7 @@ class SpeedServer(SimpleHTTPRequestHandler):
 
         if path == "/api/download":
             size = int(params.get("bytes", ["5000000"])[0])
-            chunk = b"0" * 1024*1024
+            chunk = b"0" * (4 * 1024 * 1024)
             self.send_response(200)
             self.send_header("Content-Type", "application/octet-stream")
             self.send_header("Cache-Control", "no-store")
