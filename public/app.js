@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		const serverLocEl = document.getElementById("serverLocResult");
 		const clientIpEl = document.getElementById("clientIpResult");
 
-    // Gauge helpers
-    const GAUGE_MAX_MBPS = 1000; // scale up to 1000 Mbps
+		// Gauge helpers
+		const GAUGE_MAX_MBPS = 300; // scale up to 300 Mbps for better visual range
 		let gaugeLen = 0;
     function initGauge(arc) {
         if (!arc) return 0;
