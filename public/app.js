@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const ul = await testUploadAccurate();
             upEl.textContent = ul.toFixed(1) + " Mbps";
 
-            statusEl.textContent = "Done!";
+				statusEl.textContent = "";
         } catch (err) {
             console.error(err);
             statusEl.textContent = "Error occurred!";

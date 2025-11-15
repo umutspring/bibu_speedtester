@@ -61,7 +61,7 @@ h2 { font-size: 1.5em; color: var(--label-color); text-transform: uppercase; let
 #startButton {
     background-color: var(--glow-color); color: white; border: none; padding: 15px 40px; font-size: 18px;
     font-weight: 700; letter-spacing: 1px; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
-    margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    margin: 15px 0; box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
 }
 #startButton:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4); }
 #startButton:disabled { background: #444; box-shadow: none; cursor: not-allowed; }
