@@ -35,8 +35,8 @@ requirements.txt   # (intentionally empty – no external deps)
 Use the hosted deployment:
 
 - Open: https://bibu-speedtester.onrender.com
-- Click “Start” to begin. The gauge runs for download first, then upload.
-- Results appear in the results panel; “Data used” totals remain after the run. The gauge resets to 0 at the end.
+- Click “Start” to begin. The system runs for download first, then upload.
+- Results appear in the results panel; “Data used” totals remain after the run.
 
 If you need to self‑host in the future, the backend is a single Python file (`server.py`) and can be run locally; see Architecture for details.
 
@@ -92,7 +92,6 @@ Backend (`server.py`)
 - Results are indicative measurements, not calibrated benchmarks.
 
 ## Roadmap (Ideas)
-- Dynamic gauge scaling based on observed peak (e.g., 1.25× peak)
 - Historical runs and charts
 - Server selection and georouting
 
