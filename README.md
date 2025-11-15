@@ -1,97 +1,67 @@
 ## Speed Test
 
-A self‑hosted network measurement tool with a modern, minimal UI. It performs time‑boxed download and upload tests, reports latency metrics, and shows live progress on a single semicircular gauge.
+In this project, a speed testing application is implemented. The application presents a minimal UI, measures download and upload throughput, reports latency metrics (ping, jitter, packet loss), and visualizes live progress on a single semicircular gauge. Data usage and basic IP information (server and client) are also displayed; the server location is set to “Frankfurt”.
 
-### Key Capabilities
-- Download and upload throughput with live gauge updates
-- Latency (ping), jitter, and packet loss estimation
-- Live “Data used” counters for both directions
-- Server and client IP details (server location exposed as “Frankfurt”)
-- Zero external Python dependencies (standard library only)
+### Capabilities
+- Live download and upload speed visualization on one gauge (download phase followed by upload phase)
+- Ping, jitter, and packet loss metrics
+- “Data used” indicators for both directions (values persist after the test)
+- Server and client IP details (client public IP resolved via an ipify fallback when needed)
+- No external Python dependencies
 
 ## System Requirements
+- Modern operating system (Windows/macOS/Linux)
+- Current web browser (Chrome, Edge, Firefox, Safari)
+- No build step; no package installation required
 
-- OS: Windows 10/11, macOS 11+, or a recent Linux distribution
-- Browser: Modern browser (Chrome, Edge, Firefox, or Safari)
-- Dependencies: None (no build step, no package installs)
-
-### Architecture
-- Frontend: static single‑page app (`public/`) served directly by the backend
-- Backend: lightweight Python HTTP server (`server.py`) exposing minimal test endpoints
-- Client public IP fallback via `api.ipify.org` (frontend) when headers are not available
-
-### Directory Layout
+### Project Structure
 ```
 public/
-  index.html      # App shell and markup
-  style.css       # Styles and layout
-  app.js          # Measurement logic and UI updates
-server.py          # HTTP server and API endpoints (ThreadingHTTPServer)
-requirements.txt   # (intentionally empty – no external deps)
+  index.html    # Markup
+  style.css     # Styles
+  app.js        # Test logic and UI updates
+server.py        # Minimal HTTP server and API endpoints
+requirements.txt # Empty on purpose
 ```
 
 ## Usage (Hosted)
+The hosted deployment is available at:
+- https://bibu-speedtester.onrender.com
+- Click “Start” to begin. The download phase runs first, then the upload phase.
+- The gauge resets to 0 at the end; “Data used” totals remain visible.
 
-Use the hosted deployment:
+For self‑hosting, the backend is a single Python file (`server.py`) and can be run locally if needed.
 
-- Open: https://bibu-speedtester.onrender.com
-- Click “Start” to begin. The system runs for download first, then upload.
-- Results appear in the results panel; “Data used” totals remain after the run.
-
-If you need to self‑host in the future, the backend is a single Python file (`server.py`) and can be run locally; see Architecture for details.
-
-## Measurement Methodology
-
-- Download
-  - Multiple long‑running HTTP fetch streams are opened concurrently and aborted after a fixed test window.
-  - Throughput is computed as total received bytes divided by the intended window.
-- Upload
-  - Fixed‑size binary payloads are posted in a loop for the same window, summing total bytes sent.
-- Ping, Jitter, Packet Loss
-  - Several HTTP pings are issued; round‑trip times are recorded.
-  - Jitter is the mean absolute difference between consecutive RTTs.
-  - Timeouts count as packet loss.
-- IP Information
-  - Backend prefers a non‑loopback outward IP for the server and accepts forwarded client IP headers when present.
-  - Frontend optionally queries `https://api.ipify.org?format=json` to display the public client IP.
+## Methodology (Summary)
+- Download: multiple long‑running HTTP streams are opened in parallel and stopped after a fixed time window.
+- Upload: fixed‑size binary payloads are posted repeatedly during the same window.
+- Throughput is computed as total bytes divided by the intended test window.
+- Ping/Jitter/Loss: multiple HTTP pings are issued; timeouts count as loss; jitter is the mean absolute difference between consecutive RTTs.
+- IPs: the server reports a non‑loopback address when possible; the client public IP can be resolved via `https://api.ipify.org?format=json`.
 
 ## API Reference
+- GET `/api/ping` → `{ "pong": true }`
+- GET `/api/download?bytes=<N>` → streams `<N>` bytes
+- POST `/api/upload` → `{ "received": <bytes> }`
+- GET `/api/info` → `{ client_ip, server_ip, server_location }`
 
-- GET `/api/ping`
-  - Returns: `{ "pong": true }`
-
-- GET `/api/download?bytes=<N>`
-  - Streams `<N>` bytes for throughput testing.
-
-- POST `/api/upload`
-  - Accepts arbitrary bytes; responds with `{ "received": <bytes> }`.
-
-- GET `/api/info`
-  - Returns: `{ "client_ip": "...", "server_ip": "...", "server_location": "Frankfurt" }`
-
-All endpoints are intended for local or controlled environments; no authentication or rate limiting is implemented.
+These endpoints are intended for local or controlled environments; no authentication or rate limiting is included.
 
 ## Configuration
+`public/app.js`:
+- `TEST_TIME` (seconds)
+- `DL_THREADS`, `UL_THREADS`
+- `GAUGE_MAX_MBPS` (default 300)
 
-Frontend (`public/app.js`)
-- `TEST_TIME` (seconds): duration of each phase (download/upload)
-- `DL_THREADS`, `UL_THREADS`: parallelism for download/upload
-- `GAUGE_MAX_MBPS`: gauge maximum (default 300 Mbps for better visual resolution)
+`server.py`:
+- `server_location` (returned as “Frankfurt”)
 
-Backend (`server.py`)
-- `server_location`: exposed by `/api/info` (default “Frankfurt”)
-- Port: pass as an argument, e.g. `python server.py 8000`
+## Notes
+- Measured speeds depend on the browser, CPU, NIC, OS network stack, and server/network limits.
+- Local runs may show loopback addresses; correct client IPs usually require forwarded headers from a proxy/CDN.
+- The tool is intended for indicative measurements rather than laboratory‑grade benchmarking.
 
-## Deployment Notes
-- When running behind a reverse proxy or CDN, forward client IP headers (`X-Forwarded-For`, `X-Real-IP`, `CF-Connecting-IP`) for accurate client IP detection.
-- The server attempts to determine a non‑loopback address for the server IP using an outbound UDP socket (fallback to bound address).
-
-## Limitations
-- Browser, CPU, NIC, OS network stack, and server throughput can limit observed speeds.
-- Local runs may show loopback addresses; public IP resolution depends on environment and forwarding headers.
-- Results are indicative measurements, not calibrated benchmarks.
-
-## Roadmap (Ideas)
+## Roadmap
 - Historical runs and charts
 - Server selection and georouting
 
